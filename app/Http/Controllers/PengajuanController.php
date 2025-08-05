@@ -11,12 +11,79 @@ use Carbon\Carbon;
 
 class PengajuanController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/pengajuan",
+     *     tags={"Pengajuan"},
+     *     summary="Get all pengajuan",
+     *     description="Get list of all pengajuan with content items",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Pengajuan")
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         $pengajuans = Pengajuan::with('contentItems')->get();
         return PengajuanResource::collection($pengajuans);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/pengajuan",
+     *     tags={"Pengajuan"},
+     *     summary="Create new pengajuan",
+     *     description="Create a new pengajuan with content items",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"noComtab", "tema", "judul"},
+     *             @OA\Property(property="noComtab", type="string", example="CT001"),
+     *             @OA\Property(property="pin", type="string", example="1234"),
+     *             @OA\Property(property="tema", type="string", example="Sample Tema"),
+     *             @OA\Property(property="judul", type="string", example="Sample Judul"),
+     *             @OA\Property(property="jenisMedia", type="string", example="Video"),
+     *             @OA\Property(property="petugasPelaksana", type="string", example="John Doe"),
+     *             @OA\Property(property="supervisor", type="string", example="Jane Doe"),
+     *             @OA\Property(property="durasi", type="string", example="30 menit"),
+     *             @OA\Property(property="jumlahProduksi", type="integer", example=1),
+     *             @OA\Property(property="tanggalOrder", type="string", format="date", example="2025-08-06"),
+     *             @OA\Property(property="tanggalSubmit", type="string", format="date", example="2025-08-06"),
+     *             @OA\Property(property="isConfirmed", type="boolean", example=false),
+     *             @OA\Property(property="workflowStage", type="string", example="draft"),
+     *             @OA\Property(
+     *                 property="contentItems",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="nama", type="string"),
+     *                     @OA\Property(property="jenisKonten", type="string"),
+     *                     @OA\Property(property="nomorSurat", type="string"),
+     *                     @OA\Property(property="narasiText", type="string"),
+     *                     @OA\Property(property="keterangan", type="string"),
+     *                     @OA\Property(property="status", type="string", example="pending")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Pengajuan created successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/Pengajuan")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -110,12 +177,79 @@ class PengajuanController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    /**
+     * @OA\Get(
+     *     path="/api/pengajuan/{id}",
+     *     tags={"Pengajuan"},
+     *     summary="Get specific pengajuan",
+     *     description="Get pengajuan by ID with content items",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(ref="#/components/schemas/Pengajuan")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Pengajuan not found"
+     *     )
+     * )
+     */
     public function show($id)
     {
         $pengajuan = Pengajuan::with('contentItems')->findOrFail($id);
         return new PengajuanResource($pengajuan);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/pengajuan/{id}",
+     *     tags={"Pengajuan"},
+     *     summary="Update pengajuan",
+     *     description="Update an existing pengajuan",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="noComtab", type="string"),
+     *             @OA\Property(property="pin", type="string"),
+     *             @OA\Property(property="tema", type="string"),
+     *             @OA\Property(property="judul", type="string"),
+     *             @OA\Property(property="jenisMedia", type="string"),
+     *             @OA\Property(property="petugasPelaksana", type="string"),
+     *             @OA\Property(property="supervisor", type="string"),
+     *             @OA\Property(property="durasi", type="string"),
+     *             @OA\Property(property="jumlahProduksi", type="integer"),
+     *             @OA\Property(property="isConfirmed", type="boolean"),
+     *             @OA\Property(property="tanggalKonfirmasi", type="string", format="date"),
+     *             @OA\Property(property="contentItems", type="array", @OA\Items(type="object"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Pengajuan updated successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/Pengajuan")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Pengajuan not found"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
     public function update(Request $request, $id)
     {
         DB::beginTransaction();
@@ -173,6 +307,31 @@ class PengajuanController extends Controller
     }
 
 
+    /**
+     * @OA\Delete(
+     *     path="/api/pengajuan/{id}",
+     *     tags={"Pengajuan"},
+     *     summary="Delete pengajuan",
+     *     description="Delete a pengajuan by ID",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Pengajuan deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Deleted")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Pengajuan not found"
+     *     )
+     * )
+     */
     public function destroy($id)
     {
         $pengajuan = Pengajuan::findOrFail($id);

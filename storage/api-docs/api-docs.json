@@ -1,0 +1,702 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "BE Form Pengajuan API",
+        "description": "API Documentation for BE Form Pengajuan",
+        "contact": {
+            "email": "admin@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://my-default-host.com",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User login",
+                "description": "Login user and get access token",
+                "operationId": "dd51a484b7fa0f97c7680fdbde14cf5f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "username",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "admin"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login berhasil."
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abcd1234..."
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "username": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "created_at": {
+                                                    "type": "string"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User logout",
+                "description": "Revoke current access token",
+                "operationId": "df9bdc6c7a6d9f20b983526b2ec0f698",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logout berhasil."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get authenticated user",
+                "description": "Get current authenticated user information",
+                "operationId": "b5de204f5e452ef51327c691aa99e77c",
+                "responses": {
+                    "200": {
+                        "description": "User information",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "username": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/pengajuan": {
+            "get": {
+                "tags": [
+                    "Pengajuan"
+                ],
+                "summary": "Get all pengajuan",
+                "description": "Get list of all pengajuan with content items",
+                "operationId": "b49fb48e0c70cf6d4aa484fdfe2632d4",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Pengajuan"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Pengajuan"
+                ],
+                "summary": "Create new pengajuan",
+                "description": "Create a new pengajuan with content items",
+                "operationId": "c0750d63bc56521e673601a72b50711d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "noComtab",
+                                    "tema",
+                                    "judul"
+                                ],
+                                "properties": {
+                                    "noComtab": {
+                                        "type": "string",
+                                        "example": "CT001"
+                                    },
+                                    "pin": {
+                                        "type": "string",
+                                        "example": "1234"
+                                    },
+                                    "tema": {
+                                        "type": "string",
+                                        "example": "Sample Tema"
+                                    },
+                                    "judul": {
+                                        "type": "string",
+                                        "example": "Sample Judul"
+                                    },
+                                    "jenisMedia": {
+                                        "type": "string",
+                                        "example": "Video"
+                                    },
+                                    "petugasPelaksana": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "supervisor": {
+                                        "type": "string",
+                                        "example": "Jane Doe"
+                                    },
+                                    "durasi": {
+                                        "type": "string",
+                                        "example": "30 menit"
+                                    },
+                                    "jumlahProduksi": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "tanggalOrder": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-06"
+                                    },
+                                    "tanggalSubmit": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-06"
+                                    },
+                                    "isConfirmed": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "workflowStage": {
+                                        "type": "string",
+                                        "example": "draft"
+                                    },
+                                    "contentItems": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "nama": {
+                                                    "type": "string"
+                                                },
+                                                "jenisKonten": {
+                                                    "type": "string"
+                                                },
+                                                "nomorSurat": {
+                                                    "type": "string"
+                                                },
+                                                "narasiText": {
+                                                    "type": "string"
+                                                },
+                                                "keterangan": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pengajuan created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pengajuan"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pengajuan/{id}": {
+            "get": {
+                "tags": [
+                    "Pengajuan"
+                ],
+                "summary": "Get specific pengajuan",
+                "description": "Get pengajuan by ID with content items",
+                "operationId": "13042a7cb17928f5b57516ae37600b5b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pengajuan"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pengajuan not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Pengajuan"
+                ],
+                "summary": "Update pengajuan",
+                "description": "Update an existing pengajuan",
+                "operationId": "cd7caf4807905cd8eae51e2e8a842e27",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "noComtab": {
+                                        "type": "string"
+                                    },
+                                    "pin": {
+                                        "type": "string"
+                                    },
+                                    "tema": {
+                                        "type": "string"
+                                    },
+                                    "judul": {
+                                        "type": "string"
+                                    },
+                                    "jenisMedia": {
+                                        "type": "string"
+                                    },
+                                    "petugasPelaksana": {
+                                        "type": "string"
+                                    },
+                                    "supervisor": {
+                                        "type": "string"
+                                    },
+                                    "durasi": {
+                                        "type": "string"
+                                    },
+                                    "jumlahProduksi": {
+                                        "type": "integer"
+                                    },
+                                    "isConfirmed": {
+                                        "type": "boolean"
+                                    },
+                                    "tanggalKonfirmasi": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "contentItems": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pengajuan updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pengajuan"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pengajuan not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Pengajuan"
+                ],
+                "summary": "Delete pengajuan",
+                "description": "Delete a pengajuan by ID",
+                "operationId": "681f0914c7574b7e164a2c2da4d080ed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pengajuan deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pengajuan not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Pengajuan": {
+                "title": "Pengajuan",
+                "description": "Pengajuan model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "no_comtab": {
+                        "type": "string",
+                        "example": "CT001"
+                    },
+                    "pin_sandi": {
+                        "type": "string",
+                        "example": "1234"
+                    },
+                    "tema": {
+                        "type": "string",
+                        "example": "Sample Tema"
+                    },
+                    "judul": {
+                        "type": "string",
+                        "example": "Sample Judul"
+                    },
+                    "jenis_media": {
+                        "type": "string",
+                        "example": "Video"
+                    },
+                    "media_pemerintah": {
+                        "type": "string",
+                        "example": "[]"
+                    },
+                    "media_massa": {
+                        "type": "string",
+                        "example": "[]"
+                    },
+                    "workflow_stage": {
+                        "type": "string",
+                        "example": "draft"
+                    },
+                    "petugas_pelaksana": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "supervisor": {
+                        "type": "string",
+                        "example": "Jane Doe"
+                    },
+                    "durasi": {
+                        "type": "string",
+                        "example": "30 menit"
+                    },
+                    "jumlah_produksi": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tanggal_order": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-06"
+                    },
+                    "tanggal_submit": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-06"
+                    },
+                    "tanggal_konfirmasi": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "is_confirmed": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "contentItems": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ContentItem"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ContentItem": {
+                "title": "Content Item",
+                "description": "Content Item model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pengajuan_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nama": {
+                        "type": "string",
+                        "example": "Content Name"
+                    },
+                    "jenis_konten": {
+                        "type": "string",
+                        "example": "Video"
+                    },
+                    "nomor_surat": {
+                        "type": "string",
+                        "example": "001/2025"
+                    },
+                    "narasi_text": {
+                        "type": "string",
+                        "example": "Content description"
+                    },
+                    "keterangan": {
+                        "type": "string",
+                        "example": "Additional notes"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Pengajuan",
+            "description": "Pengajuan"
+        }
+    ]
+}
