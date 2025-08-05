@@ -10,13 +10,18 @@ use Illuminate\Http\Request;
  *     version="1.0.0",
  *     description="API Documentation for BE Form Pengajuan",
  *     @OA\Contact(
- *         email="admin@example.com"
+ *         email="admin@budiutamamandiri.com"
  *     )
  * )
  * 
  * @OA\Server(
- *     url=L5_SWAGGER_CONST_HOST,
- *     description="API Server"
+ *     url="https://be-savana.budiutamamandiri.com",
+ *     description="Production API Server"
+ * )
+ * 
+ * @OA\Server(
+ *     url="http://127.0.0.1:8000",
+ *     description="Local Development Server"
  * )
  * 
  * @OA\SecurityScheme(

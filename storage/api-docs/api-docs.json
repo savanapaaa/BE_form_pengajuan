@@ -4,14 +4,18 @@
         "title": "BE Form Pengajuan API",
         "description": "API Documentation for BE Form Pengajuan",
         "contact": {
-            "email": "admin@example.com"
+            "email": "admin@budiutamamandiri.com"
         },
         "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "http://my-default-host.com",
-            "description": "API Server"
+            "url": "https://be-savana.budiutamamandiri.com",
+            "description": "Production API Server"
+        },
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Local Development Server"
         }
     ],
     "paths": {
@@ -153,7 +157,7 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "sanctum": []
                     }
                 ]
             }
@@ -213,7 +217,7 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "sanctum": []
                     }
                 ]
             }
@@ -686,6 +690,12 @@
                 "type": "http",
                 "bearerFormat": "JWT",
                 "scheme": "bearer"
+            },
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Enter token in format (Bearer <token>)",
+                "name": "Authorization",
+                "in": "header"
             }
         }
     },
@@ -697,6 +707,11 @@
         {
             "name": "Pengajuan",
             "description": "Pengajuan"
+        }
+    ],
+    "security": [
+        {
+            "sanctum": []
         }
     ]
 }

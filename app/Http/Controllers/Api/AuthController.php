@@ -81,7 +81,7 @@ class AuthController extends Controller
      *     tags={"Authentication"},
      *     summary="User logout",
      *     description="Revoke current access token",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Logout successful",
@@ -113,7 +113,7 @@ class AuthController extends Controller
      *     tags={"Authentication"},
      *     summary="Get authenticated user",
      *     description="Get current authenticated user information",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="User information",
