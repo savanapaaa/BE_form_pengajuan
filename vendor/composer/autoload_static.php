@@ -547,8 +547,10 @@ class ComposerStaticInit836e149badd47d426312a347f649ce51
 
     public static $classMap = array (
         'App\\Http\\Controllers\\Api\\AuthController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/AuthController.php',
+        'App\\Http\\Controllers\\BaseController' => __DIR__ . '/../..' . '/app/Http/Controllers/BaseController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
         'App\\Http\\Controllers\\PengajuanController' => __DIR__ . '/../..' . '/app/Http/Controllers/PengajuanController.php',
+        'App\\Http\\Controllers\\SwaggerSchemas' => __DIR__ . '/../..' . '/app/Http/Controllers/SwaggerSchemas.php',
         'App\\Http\\Resources\\ContentItemResource' => __DIR__ . '/../..' . '/app/Http/Resources/ContentItemResource.php',
         'App\\Http\\Resources\\PengajuanResource' => __DIR__ . '/../..' . '/app/Http/Resources/PengajuanResource.php',
         'App\\Models\\ContentItem' => __DIR__ . '/../..' . '/app/Models/ContentItem.php',
