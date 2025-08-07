@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @OA\Info(
@@ -33,5 +35,21 @@ use Illuminate\Http\Request;
  */
 class BaseController extends Controller
 {
-    //
+    /**
+     * Get current authenticated user with proper type
+     */
+    protected function currentUser(): User
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        return $user;
+    }
+    
+    /**
+     * Get current authenticated user ID
+     */
+    protected function currentUserId(): int
+    {
+        return Auth::id();
+    }
 }
