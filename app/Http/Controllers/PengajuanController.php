@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\BaseController;
 use App\Http\Resources\PengajuanResource;
 use App\Models\Pengajuan;
 use App\Models\ContentItem;
@@ -9,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class PengajuanController extends Controller
+class PengajuanController extends BaseController
 {
     /**
      * @OA\Get(
@@ -17,12 +18,20 @@ class PengajuanController extends Controller
      *     tags={"Pengajuan"},
      *     summary="Get all pengajuan",
      *     description="Get list of all pengajuan with content items",
+     *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(ref="#/components/schemas/Pengajuan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated.")
      *         )
      *     )
      * )
