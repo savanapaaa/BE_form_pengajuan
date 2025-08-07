@@ -18,7 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(HandleCors::class);
         
         $middleware->group('api', [
-            EnsureFrontendRequestsAreStateful::class,
             SubstituteBindings::class,
         ]);
     })
