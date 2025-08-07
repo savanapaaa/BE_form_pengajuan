@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Auth;
  * )
  * 
  * @OA\SecurityScheme(
- *     securityScheme="bearerAuth",
+ *     securityScheme="sanctum",
  *     type="http",
  *     scheme="bearer",
  *     bearerFormat="JWT"
