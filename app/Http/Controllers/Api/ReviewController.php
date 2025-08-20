@@ -68,7 +68,7 @@ class ReviewController extends BaseController
             // Only show items assigned to current user (if not admin)
             /** @var User $user */
             $user = Auth::user();
-            if (!$user->hasRole(['admin', 'superadmin'])) {
+            if (!$user->hasRole(['admin', 'superadmin', 'review'])) {
                 $query->where('assigned_to', $this->currentUserId());
             }
             
@@ -170,7 +170,7 @@ class ReviewController extends BaseController
             // Check if user can review this submission
             /** @var User $user */
             $user = Auth::user();
-            if ($submission->assigned_to !== $this->currentUserId() && !$user->hasRole(['admin', 'superadmin', 'reviewer'])) {
+            if ($submission->assigned_to !== $this->currentUserId() && !$user->hasRole(['admin', 'superadmin', 'review'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized to review this submission'
@@ -227,7 +227,7 @@ class ReviewController extends BaseController
             // Check if user can assign reviews (admin/superadmin only)
             /** @var User $user */
             $user = Auth::user();
-            if (!$user->hasRole(['admin', 'superadmin'])) {
+            if (!$user->hasRole(['admin', 'superadmin', 'review'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized to assign reviews'
