@@ -66,8 +66,8 @@ class ValidationController extends BaseController
             }
             
             // Only show items assigned to current user (if not admin)
-                $query->where('validation_assigned_to', $this->currentUserId());
-            if (!$this->currentUser()->hasRole(['admin', 'superadmin'])) {
+            $query->where('validation_assigned_to', $this->currentUserId());
+            if (!$this->currentUser()->hasRole(['admin', 'superadmin', 'validasi'])) {
             }
             
             $submissions = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -168,7 +168,7 @@ class ValidationController extends BaseController
             $submission = Submission::findOrFail($id);
             
             // Check if user can validate this submission
-            if ($submission->validation_assigned_to !== $this->currentUserId() && !$this->currentUser()->hasRole(['admin', 'superadmin', 'validator'])) {
+            if ($submission->validation_assigned_to !== $this->currentUserId() && !$this->currentUser()->hasRole(['admin', 'superadmin', 'validasi'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized to validate this submission'
@@ -227,7 +227,7 @@ class ValidationController extends BaseController
             $submission = Submission::findOrFail($id);
             
             // Check if user can assign validations (admin/superadmin only)
-            if (!$this->currentUser()->hasRole(['admin', 'superadmin'])) {
+            if (!$this->currentUser()->hasRole(['admin', 'superadmin', 'validasi'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized to assign validations'
