@@ -222,7 +222,9 @@ class SubmissionController extends BaseController
             $submission = Submission::findOrFail($id);
             
             // Check if user can edit this submission
-            if ($submission->user_id !== $this->currentUserId() && !$this->currentUser()->hasRole(['admin', 'superadmin'])) {
+            $user = $this->currentUser();
+            if ($submission->user_id !== $this->currentUserId() && 
+                !$user->hasRole(['admin', 'superadmin', 'review', 'validasi'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized to edit this submission'
