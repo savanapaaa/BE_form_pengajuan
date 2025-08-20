@@ -53,8 +53,8 @@ class ValidationController extends BaseController
     {
         try {
             $query = Submission::with(['user', 'attachments', 'contentItems'])
-                ->where('workflow_stage', 'validation')
-                ->where('review_status', 'approved');
+                ->where('workflow_stage', 'validation');
+                // ->where('review_status', 'approved')
             
             // Apply filters
             if ($request->has('status')) {
@@ -95,7 +95,7 @@ class ValidationController extends BaseController
             $submission = Submission::with(['user', 'attachments', 'contentItems', 'reviews', 'validations'])
                 ->where('id', $id)
                 ->where('workflow_stage', 'validation')
-                ->where('review_status', 'approved')
+                // ->where('review_status', 'approved')
                 ->firstOrFail();
             
             return response()->json([
