@@ -159,21 +159,22 @@ class ValidationController extends BaseController
      * 
      * Submit a validation (validate/publish/reject).
      */
-    public function submitValidation(Request $request, string $id): JsonResponse
+    public function submitValidation(Request $request, $id): JsonResponse
     {
         try {
             $validated = $request->validate([
                 'status' => 'required|string|in:validated,published,rejected',
                 'notes' => 'nullable|string',
-                'validatorId' => 'required|string',
+                'validator_id' => 'required|string',
                 'publishDate' => 'nullable|date',
                 'publishedContent' => 'nullable|array'
             ]);
             
-            $contentItem = ContentItem::findOrFail($id);
-            
+            $contentItem = ContentItem::where('submission_id', $id)->firstOrFail();
+            // return response()->json($contentItem);
+
             // Check if content item is in valid state for validation
-            if ($contentItem->workflow_stage !== 'validation' || $contentItem->review_status !== 'approved') {
+            if ($contentItem->workflow_stage !== 'review' || $contentItem->review_status !== 'pending') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Content item is not ready for validation'
@@ -187,27 +188,30 @@ class ValidationController extends BaseController
                     'message' => 'Unauthorized to validate this content item'
                 ], 403);
             }
+
+            $submission = Submission::where('id', $id)->update([
+                'workflow_stage' => 'completed'
+            ]);
             
             // Create validation record
             $validation = Validation::create([
                 'submission_id' => $contentItem->submission_id,
-                'validator_id' => $validated['validatorId'],
+                'validator_id' => $validated['validator_id'],
                 'status' => $validated['status'],
                 'notes' => $validated['notes'],
                 'publish_date' => $validated['publishDate'] ?? null,
                 'published_content' => $validated['publishedContent'] ?? null,
-                'validated_at' => now()
             ]);
             
             // Update content item status
             $contentItem->update([
                 'validation_status' => $validated['status'],
                 'validation_notes' => $validated['notes'],
-                'validated_by' => $validated['validatorId'],
+                'validated_by' => $validated['validator_id'],
                 'validated_at' => now(),
                 'publish_date' => $validated['publishDate'] ?? null,
                 'published_content' => $validated['publishedContent'] ?? null,
-                'workflow_stage' => $validated['status'] === 'published' ? 'completed' : 'validation'
+                'workflow_stage' => $validated['status'] === 'validated' ? 'completed' : 'validation'
             ]);
             
             $contentItem->load(['submission.user', 'reviewer', 'validationAssignee', 'validator']);
