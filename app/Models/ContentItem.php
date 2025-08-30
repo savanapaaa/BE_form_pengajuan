@@ -21,20 +21,55 @@ class ContentItem extends Model
         'file_size',
         'order_index',
         'is_published',
-        'metadata'
+        'metadata',
+        // Review fields
+        'reviewed_by',
+        'reviewed_at',
+        'review_status',
+        'review_notes',
+        // Validation fields
+        'validation_assigned_to',
+        'validated_by',
+        'validation_assigned_at',
+        'validated_at',
+        'validation_status',
+        'validation_notes',
+        'publish_date',
+        'published_content',
+        'workflow_stage'
     ];
 
     protected $casts = [
         'metadata' => 'array',
+        'published_content' => 'array',
         'order_index' => 'integer',
         'file_size' => 'integer',
-        'is_published' => 'boolean'
+        'is_published' => 'boolean',
+        'reviewed_at' => 'datetime',
+        'validation_assigned_at' => 'datetime',
+        'validated_at' => 'datetime',
+        'publish_date' => 'date'
     ];
 
     // Relationships
     public function submission()
     {
         return $this->belongsTo(Submission::class);
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function validationAssignee()
+    {
+        return $this->belongsTo(User::class, 'validation_assigned_to');
+    }
+
+    public function validator()
+    {
+        return $this->belongsTo(User::class, 'validated_by');
     }
 
     // Scopes
@@ -51,6 +86,17 @@ class ContentItem extends Model
     public function scopePublished($query)
     {
         return $query->where('is_published', true);
+    }
+
+    public function scopeForValidation($query)
+    {
+        return $query->where('workflow_stage', 'validation')
+                     ->where('review_status', 'approved');
+    }
+
+    public function scopeAssignedTo($query, $userId)
+    {
+        return $query->where('validation_assigned_to', $userId);
     }
 
     // Accessors

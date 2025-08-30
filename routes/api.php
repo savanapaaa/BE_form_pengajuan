@@ -48,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Validations Management
     Route::prefix('validations')->group(function () {
         Route::get('/', [ValidationController::class, 'index']);
+        Route::get('validators', [ValidationController::class, 'getValidators']);
+        Route::get('reviewed-submissions', [ValidationController::class, 'getReviewedSubmissions']);
         Route::get('{id}', [ValidationController::class, 'show']);
         Route::post('{id}', [ValidationController::class, 'submitValidation']);
         Route::post('{id}/assign', [ValidationController::class, 'assignValidation']);

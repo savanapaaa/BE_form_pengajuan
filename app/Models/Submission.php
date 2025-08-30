@@ -65,6 +65,16 @@ class Submission extends Model
         return $this->hasMany(Workflow::class);
     }
 
+    public function assignedValidator()
+    {
+        return $this->belongsTo(User::class, 'assigned_validator');
+    }
+
+    public function assignedReviewer()
+    {
+        return $this->belongsTo(User::class, 'assigned_reviewer');
+    }
+
     // Scopes
     public function scopeByStatus($query, $status)
     {
