@@ -14,42 +14,44 @@ use Illuminate\Support\Facades\Auth;
 class ValidationController extends BaseController
 {
         /**
-     * @OA\Get(
-     *     path="/api/validations",
-     *     tags={"Validations"},
-     *     summary="Get submissions for validation",
-     *     description="Retrieve list of submissions that need validation (workflow_stage = validation)",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="status",
-     *         in="query",
-     *         description="Filter by validation status",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"pending", "validated", "published", "rejected"})
-     *     ),
-     *     @OA\Parameter(
-     *         name="assigned_to",
-     *         in="query",
-     *         description="Filter by assigned validator ID",
-     *         required=false,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Submissions retrieved successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Submission"))
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response=401, description="Unauthenticated"),
-     *     @OA\Response(response=500, description="Server Error")
-     * )
-     * 
-     * Display a listing of submissions that need validation.
-     */
+         * @OA\Get(
+         *     path="/api/validations",
+         *     tags={"Validations"},
+         *     summary="Get submissions for validation",
+         *     description="Retrieve list of submissions that need validation (workflow_stage = validation)",
+         *     security={{"sanctum":{}}},
+         *     @OA\Parameter(
+         *         name="status",
+         *         in="query",
+         *         description="Filter by validation status (custom app logic, not always present)",
+         *         required=false,
+         *         @OA\Schema(type="string")
+         *     ),
+         *     @OA\Parameter(
+         *         name="assigned_to",
+         *         in="query",
+         *         description="Filter by assigned validator user ID",
+         *         required=false,
+         *         @OA\Schema(type="integer")
+         *     ),
+         *     @OA\Response(
+         *         response=200,
+         *         description="Submissions retrieved successfully",
+         *         @OA\JsonContent(
+         *             @OA\Property(property="success", type="boolean", example=true),
+         *             @OA\Property(property="data", type="object",
+         *                 @OA\Property(property="current_page", type="integer", example=1),
+         *                 @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Submission")),
+         *                 @OA\Property(property="total", type="integer", example=2)
+         *             )
+         *         )
+         *     ),
+         *     @OA\Response(response=401, description="Unauthenticated"),
+         *     @OA\Response(response=500, description="Server Error")
+         * )
+         *
+         * Display a listing of submissions that need validation.
+         */
     public function index(Request $request): JsonResponse
     {
         try {

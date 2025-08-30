@@ -12,8 +12,8 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,      // Run first
             UserSeeder::class,            // Then users
             RolePermissionSeeder::class,  // Finally role permissions
-            SubmissionSeeder::class,      // Submissions
-            ContentItemSeeder::class,     // Content items
+            // SubmissionSeeder::class,      // Submissions
+            // ContentItemSeeder::class,     // Content items
         ]);
     }
 }

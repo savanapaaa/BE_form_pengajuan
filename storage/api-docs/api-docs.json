@@ -892,22 +892,16 @@
                     {
                         "name": "status",
                         "in": "query",
-                        "description": "Filter by validation status",
+                        "description": "Filter by validation status (custom app logic, not always present)",
                         "required": false,
                         "schema": {
-                            "type": "string",
-                            "enum": [
-                                "pending",
-                                "validated",
-                                "published",
-                                "rejected"
-                            ]
+                            "type": "string"
                         }
                     },
                     {
                         "name": "assigned_to",
                         "in": "query",
-                        "description": "Filter by assigned validator ID",
+                        "description": "Filter by assigned validator user ID",
                         "required": false,
                         "schema": {
                             "type": "integer"
@@ -927,11 +921,19 @@
                                         },
                                         "data": {
                                             "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
                                                 "data": {
                                                     "type": "array",
                                                     "items": {
                                                         "$ref": "#/components/schemas/Submission"
                                                     }
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 2
                                                 }
                                             },
                                             "type": "object"
