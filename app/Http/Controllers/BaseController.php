@@ -30,7 +30,8 @@ use Illuminate\Support\Facades\Auth;
  *     securityScheme="sanctum",
  *     type="http",
  *     scheme="bearer",
- *     bearerFormat="JWT"
+ *     bearerFormat="Token",
+ *     description="Enter token in format: Bearer {your-token}"
  * )
  */
 class BaseController extends Controller
@@ -38,9 +39,9 @@ class BaseController extends Controller
     /**
      * Get current authenticated user with proper type
      */
-    protected function currentUser(): User
+    protected function currentUser(): ?User
     {
-        /** @var User $user */
+        /** @var User|null $user */
         $user = Auth::user();
         return $user;
     }
@@ -48,7 +49,7 @@ class BaseController extends Controller
     /**
      * Get current authenticated user ID
      */
-    protected function currentUserId(): int
+    protected function currentUserId(): ?int
     {
         return Auth::id();
     }

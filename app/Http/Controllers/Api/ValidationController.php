@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\BaseController;
 use App\Models\Validation;
 use App\Models\Submission;
+use App\Models\ContentItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -12,12 +13,12 @@ use Illuminate\Support\Facades\Auth;
 
 class ValidationController extends BaseController
 {
-    /**
+        /**
      * @OA\Get(
      *     path="/api/validations",
      *     tags={"Validations"},
      *     summary="Get submissions for validation",
-     *     description="Retrieve list of submissions that need validation (approved by reviewers)",
+     *     description="Retrieve list of submissions that need validation (workflow_stage = validation)",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="status",
@@ -35,7 +36,7 @@ class ValidationController extends BaseController
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Validations retrieved successfully",
+     *         description="Submissions retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="data", type="object",
@@ -52,9 +53,9 @@ class ValidationController extends BaseController
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Submission::with(['user', 'attachments', 'contentItems'])
+            // Get submissions that are in validation stage
+            $query = Submission::with(['user', 'reviews.reviewer', 'validations.validator', 'assignedValidator'])
                 ->where('workflow_stage', 'validation');
-                // ->where('review_status', 'approved')
             
             // Apply filters
             if ($request->has('status')) {
@@ -62,12 +63,13 @@ class ValidationController extends BaseController
             }
             
             if ($request->has('assigned_to')) {
-                $query->where('validation_assigned_to', $request->assigned_to);
+                $query->where('assigned_validator', $request->assigned_to);
             }
             
             // Only show items assigned to current user (if not admin)
-            $query->where('validation_assigned_to', $this->currentUserId());
-            if (!$this->currentUser()->hasRole(['admin', 'superadmin', 'validasi'])) {
+            $currentUser = $this->currentUser();
+            if ($currentUser && !$currentUser->hasRole(['admin', 'superadmin'])) {
+                $query->where('assigned_validator', $this->currentUserId());
             }
             
             $submissions = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -87,26 +89,29 @@ class ValidationController extends BaseController
     }
 
     /**
-     * Display the specified submission for validation.
+     * Display the specified content item for validation.
      */
     public function show(string $id): JsonResponse
     {
         try {
-            $submission = Submission::with(['user', 'attachments', 'contentItems', 'reviews', 'validations'])
+            $contentItem = ContentItem::with(['submission.user', 'submission.reviews', 'reviewer', 'validationAssignee', 'validator'])
+                ->whereHas('submission.reviews', function ($q) {
+                    $q->where('status', 'approved');
+                })
                 ->where('id', $id)
                 ->where('workflow_stage', 'validation')
-                // ->where('review_status', 'approved')
+                ->where('review_status', 'approved')
                 ->firstOrFail();
             
             return response()->json([
                 'success' => true,
-                'data' => $submission
+                'data' => $contentItem
             ]);
             
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation not found',
+                'message' => 'Content item not found',
                 'error' => $e->getMessage()
             ], 404);
         }
@@ -117,12 +122,12 @@ class ValidationController extends BaseController
      *     path="/api/validations/{id}",
      *     tags={"Validations"},
      *     summary="Submit validation decision",
-     *     description="Submit validation, publish, or rejection for an approved submission",
+     *     description="Submit validation, publish, or rejection for an approved content item",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Submission ID to validate",
+     *         description="Content Item ID to validate",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
@@ -142,12 +147,12 @@ class ValidationController extends BaseController
      *         description="Validation submitted successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Submission"),
+     *             @OA\Property(property="data", ref="#/components/schemas/ContentItem"),
      *             @OA\Property(property="message", type="string", example="Validation submitted successfully")
      *         )
      *     ),
-     *     @OA\Response(response=403, description="Unauthorized to validate this submission"),
-     *     @OA\Response(response=404, description="Submission not found"),
+     *     @OA\Response(response=403, description="Unauthorized to validate this content item"),
+     *     @OA\Response(response=404, description="Content item not found"),
      *     @OA\Response(response=422, description="Validation Error"),
      *     @OA\Response(response=500, description="Server Error")
      * )
@@ -165,19 +170,27 @@ class ValidationController extends BaseController
                 'publishedContent' => 'nullable|array'
             ]);
             
-            $submission = Submission::findOrFail($id);
+            $contentItem = ContentItem::findOrFail($id);
             
-            // Check if user can validate this submission
-            if ($submission->validation_assigned_to !== $this->currentUserId() && !$this->currentUser()->hasRole(['admin', 'superadmin', 'validasi'])) {
+            // Check if content item is in valid state for validation
+            if ($contentItem->workflow_stage !== 'validation' || $contentItem->review_status !== 'approved') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unauthorized to validate this submission'
+                    'message' => 'Content item is not ready for validation'
+                ], 422);
+            }
+            
+            // Check if user can validate this content item
+            if ($contentItem->validation_assigned_to !== $this->currentUserId() && !$this->currentUser()->hasRole(['admin', 'superadmin'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized to validate this content item'
                 ], 403);
             }
             
             // Create validation record
             $validation = Validation::create([
-                'submission_id' => $submission->id,
+                'submission_id' => $contentItem->submission_id,
                 'validator_id' => $validated['validatorId'],
                 'status' => $validated['status'],
                 'notes' => $validated['notes'],
@@ -186,8 +199,8 @@ class ValidationController extends BaseController
                 'validated_at' => now()
             ]);
             
-            // Update submission status
-            $submission->update([
+            // Update content item status
+            $contentItem->update([
                 'validation_status' => $validated['status'],
                 'validation_notes' => $validated['notes'],
                 'validated_by' => $validated['validatorId'],
@@ -197,11 +210,11 @@ class ValidationController extends BaseController
                 'workflow_stage' => $validated['status'] === 'published' ? 'completed' : 'validation'
             ]);
             
-            $submission->load(['user', 'attachments', 'contentItems', 'reviews', 'validations']);
+            $contentItem->load(['submission.user', 'reviewer', 'validationAssignee', 'validator']);
             
             return response()->json([
                 'success' => true,
-                'data' => $submission,
+                'data' => $contentItem,
                 'message' => 'Validation submitted successfully'
             ]);
             
@@ -215,7 +228,42 @@ class ValidationController extends BaseController
     }
 
     /**
-     * Assign a validator to a submission.
+     * @OA\Post(
+     *     path="/api/validations/{id}/assign",
+     *     tags={"Validations"},
+     *     summary="Assign validator to content item",
+     *     description="Assign a validator to a content item for validation",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Content Item ID to assign validator",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"assigneeId"},
+     *             @OA\Property(property="assigneeId", type="string", example="1", description="ID of user to assign as validator")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Validation assigned successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/ContentItem"),
+     *             @OA\Property(property="message", type="string", example="Validation assigned successfully")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Unauthorized to assign validations"),
+     *     @OA\Response(response=404, description="Content item not found"),
+     *     @OA\Response(response=422, description="Content item not ready for validation assignment"),
+     *     @OA\Response(response=500, description="Server Error")
+     * )
+     * 
+     * Assign a validator to a content item.
      */
     public function assignValidation(Request $request, string $id): JsonResponse
     {
@@ -224,26 +272,34 @@ class ValidationController extends BaseController
                 'assigneeId' => 'required|string|exists:users,id'
             ]);
             
-            $submission = Submission::findOrFail($id);
+            $contentItem = ContentItem::findOrFail($id);
+            
+            // Check if content item is ready for validation assignment
+            if ($contentItem->workflow_stage !== 'validation' || $contentItem->review_status !== 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Content item is not ready for validation assignment'
+                ], 422);
+            }
             
             // Check if user can assign validations (admin/superadmin only)
-            if (!$this->currentUser()->hasRole(['admin', 'superadmin', 'validasi'])) {
+            if (!$this->currentUser()->hasRole(['admin', 'superadmin'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized to assign validations'
                 ], 403);
             }
             
-            $submission->update([
+            $contentItem->update([
                 'validation_assigned_to' => $validated['assigneeId'],
                 'validation_assigned_at' => now()
             ]);
             
-            $submission->load(['user', 'attachments', 'contentItems']);
+            $contentItem->load(['submission.user', 'reviewer', 'validationAssignee', 'validator']);
             
             return response()->json([
                 'success' => true,
-                'data' => $submission,
+                'data' => $contentItem,
                 'message' => 'Validation assigned successfully'
             ]);
             
@@ -251,6 +307,115 @@ class ValidationController extends BaseController
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to assign validation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/validations/validators",
+     *     tags={"Validations"},
+     *     summary="Get list of available validators",
+     *     description="Retrieve list of users who can validate content",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Validators retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/User"))
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=500, description="Server Error")
+     * )
+     * 
+     * Get list of available validators.
+     */
+    public function getValidators(): JsonResponse
+    {
+        try {
+            // Check if user can view validators (admin/superadmin only)
+            if (!$this->currentUser()->hasRole(['admin', 'superadmin'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized to view validators'
+                ], 403);
+            }
+
+            $validators = User::whereIn('role', ['validasi', 'admin', 'superadmin'])
+                ->select('id', 'name', 'email', 'role')
+                ->orderBy('name')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $validators
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch validators',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/validations/reviewed-submissions",
+     *     tags={"Validations"},
+     *     summary="Get reviewed submissions ready for content creation",
+     *     description="Retrieve list of submissions that have been reviewed and approved, ready for content item creation",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Reviewed submissions retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Submission"))
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=500, description="Server Error")
+     * )
+     * 
+     * Get reviewed submissions that are ready for content creation and validation.
+     */
+    public function getReviewedSubmissions(): JsonResponse
+    {
+        try {
+            // Check if user can view submissions (admin/superadmin/validasi only)
+            if (!$this->currentUser()->hasRole(['admin', 'superadmin', 'validasi'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized to view reviewed submissions'
+                ], 403);
+            }
+
+            $submissions = Submission::with(['user', 'reviews' => function($q) {
+                    $q->where('status', 'approved')->with('reviewer');
+                }])
+                ->whereHas('reviews', function ($q) {
+                    $q->where('status', 'approved');
+                })
+                ->where('workflow_stage', 'review')
+                ->orderBy('updated_at', 'desc')
+                ->paginate(10);
+
+            return response()->json([
+                'success' => true,
+                'data' => $submissions
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch reviewed submissions',
                 'error' => $e->getMessage()
             ], 500);
         }

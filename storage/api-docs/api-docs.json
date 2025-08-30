@@ -886,7 +886,7 @@
                     "Validations"
                 ],
                 "summary": "Get submissions for validation",
-                "description": "Retrieve list of submissions that need validation (approved by reviewers)",
+                "description": "Retrieve list of submissions that need validation (workflow_stage = validation)",
                 "operationId": "151a55deace0c03d1a672f81996179c7",
                 "parameters": [
                     {
@@ -916,7 +916,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Validations retrieved successfully",
+                        "description": "Submissions retrieved successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -962,13 +962,13 @@
                     "Validations"
                 ],
                 "summary": "Submit validation decision",
-                "description": "Submit validation, publish, or rejection for an approved submission",
+                "description": "Submit validation, publish, or rejection for an approved content item",
                 "operationId": "4818337d143c647e309cee39f20f1521",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Submission ID to validate",
+                        "description": "Content Item ID to validate",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1032,7 +1032,7 @@
                                             "example": true
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Submission"
+                                            "$ref": "#/components/schemas/ContentItem"
                                         },
                                         "message": {
                                             "type": "string",
@@ -1045,13 +1045,192 @@
                         }
                     },
                     "403": {
-                        "description": "Unauthorized to validate this submission"
+                        "description": "Unauthorized to validate this content item"
                     },
                     "404": {
-                        "description": "Submission not found"
+                        "description": "Content item not found"
                     },
                     "422": {
                         "description": "Validation Error"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/validations/{id}/assign": {
+            "post": {
+                "tags": [
+                    "Validations"
+                ],
+                "summary": "Assign validator to content item",
+                "description": "Assign a validator to a content item for validation",
+                "operationId": "a2932beb1aeff681e05138eb1e64184b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Content Item ID to assign validator",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "assigneeId"
+                                ],
+                                "properties": {
+                                    "assigneeId": {
+                                        "description": "ID of user to assign as validator",
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Validation assigned successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ContentItem"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation assigned successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized to assign validations"
+                    },
+                    "404": {
+                        "description": "Content item not found"
+                    },
+                    "422": {
+                        "description": "Content item not ready for validation assignment"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/validations/validators": {
+            "get": {
+                "tags": [
+                    "Validations"
+                ],
+                "summary": "Get list of available validators",
+                "description": "Retrieve list of users who can validate content",
+                "operationId": "90946702e2dab1aa9a214b7167c6adfb",
+                "responses": {
+                    "200": {
+                        "description": "Validators retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/validations/reviewed-submissions": {
+            "get": {
+                "tags": [
+                    "Validations"
+                ],
+                "summary": "Get reviewed submissions ready for content creation",
+                "description": "Retrieve list of submissions that have been reviewed and approved, ready for content item creation",
+                "operationId": "d16267d3fb6a44c6819debf802ab7cd4",
+                "responses": {
+                    "200": {
+                        "description": "Reviewed submissions retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Submission"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
                     },
                     "500": {
                         "description": "Server Error"
@@ -1918,10 +2097,10 @@
         },
         "securitySchemes": {
             "sanctum": {
-                "type": "apiKey",
-                "description": "Enter token in format (Bearer <token>)",
-                "name": "Authorization",
-                "in": "header"
+                "type": "http",
+                "description": "Enter token in format: Bearer {your-token}",
+                "scheme": "bearer",
+                "bearerFormat": "Token"
             }
         }
     },
