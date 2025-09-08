@@ -20,6 +20,7 @@ return [
     'allowed_origins' => [
         'http://localhost:3000',
         'http://localhost:3001',
+        'https://fe-pengajuanclean-8744.vercel.app'
         // frontend dev URL kamu
     ],
 
