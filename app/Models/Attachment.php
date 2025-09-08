@@ -150,8 +150,10 @@ class Attachment extends Model
 
     public function getThumbnailUrlAttribute()
     {
-        if ($this->thumbnail_url) {
-            return $this->thumbnail_url;
+        // Access the raw database value to avoid recursion
+        $thumbnailUrl = $this->getAttributes()['thumbnail_url'] ?? null;
+        if ($thumbnailUrl) {
+            return $thumbnailUrl;
         }
         
         if ($this->thumbnail_path) {
